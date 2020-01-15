@@ -1,32 +1,25 @@
-const axios = require('axios');
-const cheerio = require('cheerio');
-var http = require('http');
-var fs = require('fs');
+// Functions
+const getHtml = require("./lib/getHtml");
+const getQueries = require("./lib/getQueries");
+const downloadFiles = require("./lib/downloadFiles");
 
-const url = 'http://joyreactor.cc/post/4209094';
+try {
+  // Get process parameters
+  const url = process.argv[2];
+  const hostname = new URL(url).hostname;
+  const amount = Number(process.argv[3]) || 1;
+  const types = process.argv[4] ? process.argv.slice(4) : ["image"];
 
-function getData(html) {
-  data = [];
-  const $ = cheerio.load(html);
-  $('.image img').each((i, image) => {
-    image.attribs.src.replace('cc', 'com');
-    data.push(image.attribs.src);
-  });
-  data.forEach((url, i) => {
-    var file = fs.createWriteStream(i + ".jpg");
-    var request = http.get(url, function(response) {
-      response.headers
-      response.pipe(file);
-    });
-  });
+  (async () => {
+    try {
+      const html = await getHtml(url);
+      const queries = getQueries(html, hostname, types);
+      await downloadFiles(queries);
+    } catch(err) {
+      console.log(`MAIN FUNCTION ERROR: ${err.message}`);
+    }
+  })();
 
-  return data;
+} catch(err) {
+  console.log(`PARAMETERS ERROR: ${err.message}`);
 }
-
-async function getSite(url) {
-  const response = await axios.get(url);
-  const data = getData(response.data);
-  console.log(data);
-}
-
-getSite(url);
