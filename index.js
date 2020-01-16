@@ -1,20 +1,26 @@
 // Functions
-const getHtml = require("./lib/getHtml");
-const getQueries = require("./lib/getQueries");
-const downloadFiles = require("./lib/downloadFiles");
+const scappUrl = require("./lib/scappUrl");
 
 try {
-  // Get process parameters
-  const url = process.argv[2];
-  const hostname = new URL(url).hostname;
-  const amount = Number(process.argv[3]) || 1;
+  const initialUrl = process.argv[2];
+  const hostname = new URL(initialUrl).hostname;
+  const initialAmount = Number(process.argv[3]) || 1;
   const types = process.argv[4] ? process.argv.slice(4) : ["image"];
 
   (async () => {
     try {
-      const html = await getHtml(url);
-      const queries = getQueries(html, hostname, types);
-      await downloadFiles(queries);
+      let url = initialUrl;
+      let amount = initialAmount;
+      
+      while (amount >= 1) {
+        await scappUrl(url, hostname, types);
+        url = url.replace(/\d+$/, (numbers) => numbers - 1);
+        if (url === initialUrl) {
+          amount = 0;
+        } else {
+          amount--;
+        }
+      }
     } catch(err) {
       console.log(`MAIN FUNCTION ERROR: ${err.message}`);
     }
