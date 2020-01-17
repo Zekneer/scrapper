@@ -14,6 +14,7 @@ try {
       
       while (amount >= 1) {
         await scappUrl(url, hostname, types);
+        console.log(`Page ${amount} scrapped!`);
         url = url.replace(/\d+$/, (numbers) => numbers - 1);
         if (url === initialUrl) {
           amount = 0;
